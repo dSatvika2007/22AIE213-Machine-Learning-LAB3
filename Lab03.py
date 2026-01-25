@@ -108,17 +108,18 @@ def compare_minkowski_dist(x1,x2):
 def knn_class(train_X,train_y):
     k=KNeighborsClassifier(n_neighbors=3) #KNN algorithm for k=3, search for 3 nearest points but didn't yet give data to it. A fter giving data it starts searching
     k.fit(train_X,train_y) #gave data for searching
+    return k
 
 #A8
 def accuracy(test_X,test_y):
-    k_data=knn_class(train_X,train_y)
-    accuracy=k_data.score(test_X,test_y) #generates an accuracy report of the KNN by giving test data to it. so that how much accurately it predicted
+    k1=knn_class(train_X,train_y)
+    accuracy=k1.score(test_X,test_y) #generates an accuracy report of the KNN by giving test data to it. so that how much accurately it predicted
     return f"Accuracy:{accuracy}"
 
 #A9
 def predict_neigh(test_X):
     k_data=knn_class(train_X,train_y)
-    test_X_vec=test_X[0] #taking 1 subject(1 pateint's data) which is a vector of 19 features
+    test_X_vec=test_X[0].reshape(1,-1) #taking 1 subject(1 pateint's data) which is a vector of 19 features, reshape is taking 1 row and -1 indicates take all columns
     pre=k_data.predict(test_X_vec) #produces class(0 or 2) of the test vector
     return f"Predict:{pre}"
 
@@ -158,7 +159,7 @@ def plot_knn_for_kvalues(train_X,train_y,test_X,test_y):
     for k in k_values:
         model = KNeighborsClassifier(n_neighbors=k) # KNN for range of values of K
         model.fit(train_X,train_y)
-    accuracies.append(model.score(test_X,test_y))
+        accuracies.append(model.score(test_X,test_y))
     plt.plot(k_values, accuracies, marker='o') # ploting the accuracies for each k
     plt.xlabel("k value")
     plt.ylabel("Accuracy")
@@ -173,20 +174,20 @@ def performance_metrics(train_X,train_y,test_X,test_y):
     y_test_pred = knn.predict(test_X)
     cm_train = confusion_matrix(train_y, y_train_pred) # confusion matrix
     cm_test = confusion_matrix(test_y, y_test_pred)
-    return f"Accuracy :{accuracy_score(train_y,y_train_pred)},Precision:{precision_score(train_y, y_train_pred)},Recall:{recall_score(train_y, y_train_pred)},F1-Score:{f1_score(train_y, y_train_pred)}"
+    return f"Accuracy :{accuracy_score(train_y,y_train_pred)},Precision:{precision_score(train_y, y_train_pred,pos_label=0)},Recall:{recall_score(train_y, y_train_pred,pos_label=0)},F1-Score:{f1_score(train_y, y_train_pred,pos_label=0)}"
 
 #A13
-def confusion_matrix_manual(train_X,train_y,test_X,test_y,y_true):
+def confusion_matrix_manual(train_X,train_y,test_X,test_y):
     knn = KNeighborsClassifier(n_neighbors=3)
     knn.fit(train_X,train_y)
     y_pred = knn.predict(test_X)
     TP = FP = FN = TN = 0
-    for i in range(len(y_true)):
-        if y_true[i] == 1 and y_pred[i] == 1:
+    for i in range(len(test_y)):
+        if test_y[i] == 2 and y_pred[i] == 2:
             TP += 1
-        elif y_true[i] == 0 and y_pred[i] == 1:
+        elif test_y[i] == 0 and y_pred[i] == 2:
             FP += 1
-        elif y_true[i] == 1 and y_pred[i] == 0:
+        elif test_y[i] == 2 and y_pred[i] == 0:
             FN += 1
         else:
             TN += 1
@@ -208,8 +209,8 @@ def fbeta_score_manual(TP, FP, FN, beta=1):
         return 0
     return (1 + beta**2) * (precision * recall) / ((beta**2 * precision) + recall)
 
-def compare_performance(train_X,train_y,test_X,test_y,y_true):
-    TP, FP, FN, TN = confusion_matrix_manual(train_X,train_y,test_X,test_y,y_true)
+def compare_performance(train_X,train_y,test_X,test_y):
+    TP, FP, FN, TN = confusion_matrix_manual(train_X,train_y,test_X,test_y)
     accuracy = accuracy_score_manual(TP, FP, FN, TN)
     precision = precision_score_manual(TP, FP)
     recall = recall_score_manual(TP, FN)
@@ -284,6 +285,7 @@ if __name__ == "__main__":
  print(package_dot(A,B))
  print(package_norm(A,B))
  print(calculate_data_set(X))
+ print(class_mean(X,y))
  print(class_std(X,y))
  print(distance(X,y))
  print(plot_hist(X))
